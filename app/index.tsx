@@ -9,8 +9,8 @@ export default function Index() {
       className="w-full h-full bg-background flex items-center justify-center gap-4"
     >
         <TitleText title="Emotion Tamer" />
-        <CustomButton title="Login" onPress={()=>router.push("/(auth)/signin")} />
-
+        <CustomButton title="Login" onPress={()=>router.push("/(auth)/signin")} bgColor="primary" />
+        <CustomButton title="Register" onPress={()=>router.push("/(auth)/signup")} bgColor="secondary" />
     </SafeAreaView>
   );
 }

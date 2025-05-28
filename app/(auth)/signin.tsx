@@ -2,6 +2,7 @@ import React from 'react'
 import { Image, SafeAreaView, ScrollView, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
 import CustomTextInput from '../components/CustomTextInput'
+import MiniAuthRedirect from '../components/MiniAuthRedirect'
 import TitleText from '../components/TitleText'
 const signin = () => {
   return (
@@ -31,7 +32,8 @@ const signin = () => {
             <View className='flex items-center justify-center gap-5'>
            <CustomTextInput placeholder='Email' />
            <CustomTextInput placeholder='Password' />
-           <CustomButton title='Login' onPress={()=>{}} />
+           <CustomButton title='Login' onPress={()=>{}} bgColor="primary" />
+           <MiniAuthRedirect target="/(auth)/signup" text="Don't have an account? Sign up" />
            </View>
 </ScrollView>
     </SafeAreaView>
