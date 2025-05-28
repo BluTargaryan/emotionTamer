@@ -1,11 +1,12 @@
 import { router } from 'expo-router'
 import React from 'react'
-import { Image, SafeAreaView, ScrollView, View } from 'react-native'
+import { Image, SafeAreaView, ScrollView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
 import CustomTextInput from '../components/CustomTextInput'
 import MiniAuthRedirect from '../components/MiniAuthRedirect'
 import TitleText from '../components/TitleText'
-const signup = () => {
+
+const signupCodeVerification = () => {
   return (
     <SafeAreaView className='w-full h-full'>
     <ScrollView 
@@ -29,9 +30,11 @@ const signup = () => {
           resizeMode='contain'
           />
           <View className='flex items-center justify-center gap-5'>
-         <CustomTextInput placeholder='Email' />
+            <Text className='text-text w-56 text-center text-xl'>Set up your password</Text>
+         <CustomTextInput placeholder='Enter your password' />
+         <CustomTextInput placeholder='Confirm your password' />
 
-         <CustomButton title='Register' onPress={()=>{router.push("/signupCodeVerification")}} bgColor="primary" />
+         <CustomButton title='Register' onPress={()=>{router.push("/")}} bgColor="primary" />
 
           <MiniAuthRedirect target="/(auth)/signin" text="Already have an account? Sign in" color="text"/>
          </View>
@@ -40,4 +43,4 @@ const signup = () => {
   )
 }
 
-export default signup
+export default signupCodeVerification

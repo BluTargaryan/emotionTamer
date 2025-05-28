@@ -33,7 +33,8 @@ const signin = () => {
            <CustomTextInput placeholder='Email' />
            <CustomTextInput placeholder='Password' />
            <CustomButton title='Login' onPress={()=>{}} bgColor="primary" />
-           <MiniAuthRedirect target="/(auth)/signup" text="Don't have an account? Sign up" />
+           <MiniAuthRedirect target="/(auth)/signup" text="Don't have an account? Sign up" color="text"/>
+           <MiniAuthRedirect target="/(auth)/forgotPassword" text="Forgot password?" color="secondary"/>
            </View>
 </ScrollView>
     </SafeAreaView>
