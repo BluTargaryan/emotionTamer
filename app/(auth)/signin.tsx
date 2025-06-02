@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router'
 import React from 'react'
 import { Image, SafeAreaView, ScrollView, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
@@ -5,6 +6,7 @@ import CustomTextInput from '../components/CustomTextInput'
 import MiniAuthRedirect from '../components/MiniAuthRedirect'
 import TitleText from '../components/TitleText'
 const signin = () => {
+  const router = useRouter()
   return (
     <SafeAreaView className='w-full h-full'>
       <ScrollView 
@@ -32,7 +34,7 @@ const signin = () => {
             <View className='flex items-center justify-center gap-5'>
            <CustomTextInput placeholder='Email' />
            <CustomTextInput placeholder='Password' />
-           <CustomButton title='Login' onPress={()=>{}} bgColor="primary" />
+           <CustomButton title='Login' onPress={()=>{router.push("/(main)/home")}} bgColor="primary" />
            <MiniAuthRedirect target="/(auth)/signup" text="Don't have an account? Sign up" color="text"/>
            <MiniAuthRedirect target="/(auth)/forgotPassword" text="Forgot password?" color="secondary"/>
            </View>
