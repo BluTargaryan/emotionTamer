@@ -6,7 +6,7 @@ const BreathingLayout = () => {
     <Stack>
         <Stack.Screen name="breathingStartPage"
         options={{
-          title: 'Go back to home',
+          title: 'Exercise start',
           headerStyle: {
             backgroundColor: '#EDE6DE',
           },
@@ -15,6 +15,22 @@ const BreathingLayout = () => {
             fontWeight: 'bold',
             fontSize: 24
           },
+        }}/>
+        <Stack.Screen name="breathingStageOne"
+        options={{
+          headerShown: false
+        }}/>
+        <Stack.Screen name="breathingStageHold"
+        options={{
+          headerShown: false
+        }}/>
+        <Stack.Screen name="breathingStageTwo"
+        options={{
+          headerShown: false
+        }}/>
+        <Stack.Screen name="breathingStageFinal"
+        options={{
+          headerShown: false
         }}/>
         {/* <Stack.Screen 
             name="breathingStartPage" 
