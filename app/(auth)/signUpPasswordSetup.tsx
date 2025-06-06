@@ -1,12 +1,47 @@
 import { router } from 'expo-router'
-import React from 'react'
-import { Image, SafeAreaView, ScrollView, Text, View } from 'react-native'
+import React, { useState } from 'react'
+import { Alert, Image, SafeAreaView, ScrollView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
 import CustomTextInput from '../components/CustomTextInput'
 import MiniAuthRedirect from '../components/MiniAuthRedirect'
 import TitleText from '../components/TitleText'
+import { useApp } from '../context/AppContext'
 
-const signupCodeVerification = () => {
+const signUpPasswordSetup = () => {
+  const { completeSignup } = useApp()
+  
+  // Form state
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleCompleteSignup = async () => {
+    if (isSubmitting) return
+    
+    setIsSubmitting(true)
+    
+    try {
+      const result = await completeSignup(password, confirmPassword)
+      
+      if (result.success) {
+        // Show success message and navigate to signin
+        Alert.alert('Account Created!', result.message, [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/(auth)/signin')
+          }
+        ])
+      } else {
+        // Show error message
+        Alert.alert('Signup Failed', result.message)
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <SafeAreaView className='w-full h-full'>
     <ScrollView 
@@ -31,10 +66,24 @@ const signupCodeVerification = () => {
           />
           <View className='flex items-center justify-center gap-5'>
             <Text className='text-text w-56 text-center text-xl'>Set up your password</Text>
-         <CustomTextInput placeholder='Enter your password' />
-         <CustomTextInput placeholder='Confirm your password' />
+         <CustomTextInput 
+           placeholder='Enter your password' 
+           value={password}
+           onChangeText={setPassword}
+           secureTextEntry={true}
+         />
+         <CustomTextInput 
+           placeholder='Confirm your password' 
+           value={confirmPassword}
+           onChangeText={setConfirmPassword}
+           secureTextEntry={true}
+         />
 
-         <CustomButton title='Register' onPress={()=>{router.push("/")}} bgColor="primary" />
+         <CustomButton 
+           title={isSubmitting ? 'Creating Account...' : 'Complete Registration'} 
+           onPress={handleCompleteSignup} 
+           bgColor="primary" 
+         />
 
           <MiniAuthRedirect target="/(auth)/signin" text="Already have an account? Sign in" color="text"/>
          </View>
@@ -43,4 +92,4 @@ const signupCodeVerification = () => {
   )
 }
 
-export default signupCodeVerification
+export default signUpPasswordSetup
