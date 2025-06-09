@@ -24,11 +24,11 @@ const signUpPasswordSetup = () => {
       const result = await completeSignup(password, confirmPassword)
       
       if (result.success) {
-        // Show success message and navigate to signin
+        // Show success message and navigate to main app (user is automatically signed in)
         Alert.alert('Account Created!', result.message, [
           {
             text: 'OK',
-            onPress: () => router.replace('/(auth)/signin')
+            onPress: () => router.replace('/(main)/home')
           }
         ])
       } else {

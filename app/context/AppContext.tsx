@@ -7,16 +7,22 @@ interface User {
   name?: string;
 }
 
+interface UserWithPassword extends User {
+  password: string;
+}
+
 interface AppContextType {
   user: User | null;
   loading: boolean;
   saveUser: (userData: User) => Promise<void>;
   logout: () => Promise<void>;
   signin: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-  signup: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   sendVerificationCode: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyCode: (code: string) => Promise<{ success: boolean; message: string }>;
   completeSignup: (password: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
+  sendPasswordResetCode: (email: string) => Promise<{ success: boolean; message: string }>;
+  verifyPasswordResetCode: (code: string) => Promise<{ success: boolean; message: string }>;
+  resetPassword: (newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -75,7 +81,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const existingUsers = await AsyncStorage.getItem('registeredUsers');
       const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
       
-      const userExists = usersArray.find((u: User) => u.email === email);
+      const userExists = usersArray.find((u: any) => u.email === email);
       if (userExists) {
         return { success: false, message: 'User with this email already exists' };
       }
@@ -170,11 +176,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, message: 'Email not verified. Please verify your email first.' };
       }
 
-      // Create user account
-      const userData: User = {
+      // Create user account with password
+      const userData: UserWithPassword = {
         id: Date.now().toString(),
         email: verificationData.email,
-        name: verificationData.email.split('@')[0]
+        name: verificationData.email.split('@')[0],
+        password: password
+      };
+
+      // Create session user (without password)
+      const sessionUser: User = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name
       };
 
       // Add to registered users
@@ -189,7 +203,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      return { success: true, message: 'Account created successfully! Please sign in.' };
+      // Automatically sign in the user after successful signup
+      await saveUser(sessionUser);
+
+      return { success: true, message: 'Account created successfully! Welcome!' };
     } catch (error) {
       console.error('Error completing signup:', error);
       return { success: false, message: 'An error occurred while creating your account' };
@@ -218,16 +235,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const existingUsers = await AsyncStorage.getItem('registeredUsers');
       const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
       
-      const registeredUser = usersArray.find((u: User) => u.email === email);
+      const registeredUser = usersArray.find((u: any) => u.email === email);
       if (!registeredUser) {
         return { success: false, message: 'No account found with this email. Please sign up first.' };
+      }
+
+      // Verify password
+      if (registeredUser.password !== password) {
+        return { success: false, message: 'Incorrect password. Please try again.' };
       }
 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Save user session
-      await saveUser(registeredUser);
+      // Save user session (remove password from session data for security)
+      const userSession: User = {
+        id: registeredUser.id,
+        email: registeredUser.email,
+        name: registeredUser.name
+      };
+      await saveUser(userSession);
       return { success: true, message: 'Successfully signed in!' };
     } catch (error) {
       console.error('Error signing in:', error);
@@ -235,50 +262,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signup = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
-    try {
-      // Basic validation
-      if (!email || !password) {
-        return { success: false, message: 'Please fill in all fields' };
-      }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return { success: false, message: 'Please enter a valid email address' };
-      }
-
-      if (password.length < 6) {
-        return { success: false, message: 'Password must be at least 6 characters' };
-      }
-
-      // Check if user already exists (simulate checking against stored users)
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const userExists = usersArray.find((u: User) => u.email === email);
-      if (userExists) {
-        return { success: false, message: 'User with this email already exists' };
-      }
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Create user object and save to registered users
-      const userData: User = {
-        id: Date.now().toString(),
-        email: email,
-        name: email.split('@')[0]
-      };
-
-      usersArray.push(userData);
-      await AsyncStorage.setItem('registeredUsers', JSON.stringify(usersArray));
-      
-      return { success: true, message: 'Successfully signed up! Please sign in.' };
-    } catch (error) {
-      console.error('Error signing up:', error);
-      return { success: false, message: 'An error occurred during sign up' };
-    }
-  };
 
   const logout = async () => {
     try {
@@ -289,16 +273,156 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const sendPasswordResetCode = async (email: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      // Basic validation
+      if (!email) {
+        return { success: false, message: 'Please enter your email address' };
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return { success: false, message: 'Please enter a valid email address' };
+      }
+
+      // Check if user exists
+      const existingUsers = await AsyncStorage.getItem('registeredUsers');
+      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
+      
+      const userExists = usersArray.find((u: any) => u.email === email);
+      if (!userExists) {
+        return { success: false, message: 'No account found with this email address' };
+      }
+
+      // Generate a reset code (in real app, this would be sent via email service)
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store reset data temporarily
+      const resetData = {
+        email: email,
+        code: resetCode,
+        timestamp: Date.now(),
+        verified: false
+      };
+      
+      await AsyncStorage.setItem('pendingPasswordReset', JSON.stringify(resetData));
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // In a real app, you would send this code via email service
+      console.log('Password reset code for', email, ':', resetCode);
+      
+      return { success: true, message: `Password reset code sent to ${email}` };
+    } catch (error) {
+      console.error('Error sending password reset code:', error);
+      return { success: false, message: 'An error occurred while sending reset code' };
+    }
+  };
+
+  const verifyPasswordResetCode = async (code: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      if (!code) {
+        return { success: false, message: 'Please enter the reset code' };
+      }
+
+      // Get pending reset data
+      const pendingData = await AsyncStorage.getItem('pendingPasswordReset');
+      if (!pendingData) {
+        return { success: false, message: 'No pending password reset found. Please start the process again.' };
+      }
+
+      const resetData = JSON.parse(pendingData);
+      
+      // Check if code is expired (15 minutes)
+      const isExpired = (Date.now() - resetData.timestamp) > (15 * 60 * 1000);
+      if (isExpired) {
+        await AsyncStorage.removeItem('pendingPasswordReset');
+        return { success: false, message: 'Reset code has expired. Please start over.' };
+      }
+
+      // Verify the code
+      if (code !== resetData.code) {
+        return { success: false, message: 'Invalid reset code. Please try again.' };
+      }
+
+      // Mark as verified
+      resetData.verified = true;
+      await AsyncStorage.setItem('pendingPasswordReset', JSON.stringify(resetData));
+
+      return { success: true, message: 'Reset code verified successfully!' };
+    } catch (error) {
+      console.error('Error verifying reset code:', error);
+      return { success: false, message: 'An error occurred during verification' };
+    }
+  };
+
+  const resetPassword = async (newPassword: string, confirmPassword: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      // Validate passwords
+      if (!newPassword || !confirmPassword) {
+        return { success: false, message: 'Please fill in all password fields' };
+      }
+
+      if (newPassword !== confirmPassword) {
+        return { success: false, message: 'Passwords do not match' };
+      }
+
+      if (newPassword.length < 6) {
+        return { success: false, message: 'Password must be at least 6 characters' };
+      }
+
+      // Get verified reset data
+      const pendingData = await AsyncStorage.getItem('pendingPasswordReset');
+      if (!pendingData) {
+        return { success: false, message: 'No pending password reset found. Please start the process again.' };
+      }
+
+      const resetData = JSON.parse(pendingData);
+      
+      if (!resetData.verified) {
+        return { success: false, message: 'Reset code not verified. Please verify your code first.' };
+      }
+
+      // Update user password in storage (in real app, this would update the backend)
+      const existingUsers = await AsyncStorage.getItem('registeredUsers');
+      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
+      
+      const userIndex = usersArray.findIndex((u: any) => u.email === resetData.email);
+      if (userIndex === -1) {
+        return { success: false, message: 'User not found. Please contact support.' };
+      }
+
+      // Update the password (in real app, this would be hashed before storing)
+      usersArray[userIndex].password = newPassword;
+      
+      await AsyncStorage.setItem('registeredUsers', JSON.stringify(usersArray));
+
+      // Clean up reset data
+      await AsyncStorage.removeItem('pendingPasswordReset');
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      return { success: true, message: 'Password reset successfully! Please sign in with your new password.' };
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      return { success: false, message: 'An error occurred while resetting your password' };
+    }
+  };
+
   const value: AppContextType = {
     user,
     loading,
     saveUser,
     logout,
     signin,
-    signup,
     sendVerificationCode,
     verifyCode,
     completeSignup,
+    sendPasswordResetCode,
+    verifyPasswordResetCode,
+    resetPassword,
   };
 
   return (
