@@ -11,13 +11,11 @@ const HomeExercises = () => {
                 className='flex flex-row pb-4'
                 contentContainerStyle={{ gap: 16 }}
             >
-                <ExerciseListItem />
-                <ExerciseListItem />
-                <ExerciseListItem />
-                <ExerciseListItem />
-                <ExerciseListItem />
+                <ExerciseListItem title='4-7-8 breathing' image={'4-7-8'} targetScreen='/(breathing)/breathingStartPage' category='Breathing Exercise' />
+                <ExerciseListItem title='5-4-3-2-1 method' image={'5-4-3-2-1'} targetScreen='/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage' category='Grounding Exercise' />
+                
             </ScrollView>
-                </View>
+                </View> 
 
 
   )

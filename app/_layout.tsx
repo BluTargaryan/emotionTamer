@@ -10,6 +10,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{headerShown:false}}/>
         <Stack.Screen name="(main)" options={{headerShown:false}}/>
         <Stack.Screen name="(breathing)" options={{headerShown:false}}/>
+        <Stack.Screen name="(FiveFourThreeTwoOne)" options={{headerShown:false}}/>
       </Stack>
     </AppProvider>
   );
