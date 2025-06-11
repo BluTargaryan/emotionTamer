@@ -1,5 +1,6 @@
 import React from 'react'
 import { ScrollView, Text, View } from 'react-native'
+import { exercises } from '../utils/ExerciseListValues'
 import ExerciseListItem from './ExerciseListItem'
 const HomeExercises = () => {
   return (
@@ -11,8 +12,9 @@ const HomeExercises = () => {
                 className='flex flex-row pb-4'
                 contentContainerStyle={{ gap: 16 }}
             >
-                <ExerciseListItem title='4-7-8 breathing' image={'4-7-8'} targetScreen='/(breathing)/breathingStartPage' category='Breathing Exercise' />
-                <ExerciseListItem title='5-4-3-2-1 method' image={'5-4-3-2-1'} targetScreen='/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage' category='Grounding Exercise' />
+                {exercises.map((exercise) => (
+                    <ExerciseListItem key={exercise.title} title={exercise.title} image={exercise.image} targetScreen={exercise.targetScreen} category={exercise.category} />
+                ))}
                 
             </ScrollView>
                 </View> 

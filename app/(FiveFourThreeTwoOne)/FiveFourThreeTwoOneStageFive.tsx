@@ -4,24 +4,24 @@ import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
 import CircleView from '../components/CircleView'
 import CustomButton from '../components/CustomButton'
 
-const FiveFourThreeTwoOneStageOne = () => {
-   const [count, setCount] = useState(5)
+const FiveFourThreeTwoOneStageFive = () => {
+   const [count, setCount] = useState(1)
    
   return (
     <SafeAreaView className='w-full h-full bg-background flex flex-col items-center justify-center gap-20'>
         <View className='flex flex-col gap-9 items-center w-3/4'>
         <Text className='text-2xl text-center text-primary'>
-        Tap the eye below for each thing you SEE
+        Tap the tongue below for each thing you TASTE
         </Text>
         
         <TouchableOpacity onPress={() => {
             if (count > 1) {
                 setCount(count - 1)
             } else {
-                router.replace("FiveFourThreeTwoOneStageTwo" as any)
+                router.replace("FiveFourThreeTwoOneFinal" as any)
             }
         }}>
-        <CircleView component={<Image source={require('../../assets/images/eye.png')} 
+        <CircleView component={<Image source={require('../../assets/images/tongue.png')} 
         className='w-auto h-28 z-10' 
         resizeMode='contain'
         />} />
@@ -34,4 +34,4 @@ const FiveFourThreeTwoOneStageOne = () => {
   )
 }
 
-export default FiveFourThreeTwoOneStageOne        
+export default FiveFourThreeTwoOneStageFive        

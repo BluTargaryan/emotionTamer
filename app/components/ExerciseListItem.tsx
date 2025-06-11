@@ -11,19 +11,19 @@ const ExerciseListItem = ({title, image,targetScreen, category}: {title: string,
   
     return (
     <TouchableOpacity 
-        className='w-36 h-56 bg-secondary rounded-lg flex flex-col'
+        className='w-auto h-56 bg-secondary rounded-lg flex flex-col'
         onPress={() => router.push(targetScreen as any)}
     >
-        <View className='flex-1'>
+        <View className='flex items-center justify-center flex-1'>
             <Image 
                 source={images[image as keyof typeof images]} 
-                className='w-full h-full'
+                className='w-full h-3/4'
                 resizeMode='contain'
             />
         </View>
         <View className='flex flex-col gap-[2px] flex-2 px-2 py-3 bg-primary rounded-b-lg'>
             <Text className='text-background  font-bold text-wrap'>{title}</Text>
-            <Text className='text-background text-sm text-wrap'>{category}</Text>
+            <Text className='text-background text-sm text-wrap'>{category} exercise</Text>
         </View>
     </TouchableOpacity>
   )

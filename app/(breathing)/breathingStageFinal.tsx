@@ -1,11 +1,30 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Image, SafeAreaView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
+import { useApp } from '../context/AppContext'
 
 const breathingStageFinal = () => {
     const { totalCycles } = useLocalSearchParams();
     const totalCyclesNum = parseInt(totalCycles as string) || 0;
+    const { addExerciseHistory } = useApp();
+
+    useEffect(() => {
+        // Save exercise history when component mounts
+        const saveHistory = async () => {
+            // Calculate duration based on cycles (each cycle is about 19 seconds: 4s inhale + 7s hold + 8s exhale)
+            const duration = totalCyclesNum * 19;
+            
+            await addExerciseHistory({
+                exerciseName: '4-7-8 Breathing',
+                exerciseType: 'Breathing exercise',
+                date: new Date().toISOString(),
+                duration: duration,
+            });
+        };
+
+        saveHistory();
+    }, [totalCyclesNum]);
 
   return (
     <SafeAreaView className='w-full h-full bg-background flex flex-col items-center justify-center gap-20'>
@@ -25,7 +44,7 @@ const breathingStageFinal = () => {
            </View>
         </View>
         
-        <CustomButton title='To Home' onPress={() => {router.replace('/(breathing)/breathingStartPage')}}/>
+        <CustomButton title='To Home' onPress={() => {router.replace('/(main)/home')}}/>
     </SafeAreaView>
   )
 }

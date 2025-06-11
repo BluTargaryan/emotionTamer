@@ -4,8 +4,18 @@ export const images = {
     // add more as needed
   };
 
-  export const categories = {
-    lungs: 'Lungs',
-    heart: 'Heart',
-    eye: 'Eye',
-  };
+  export const exercises = [
+{
+  title: '4-7-8 Breathing',
+  category: 'Breathing',
+  image: '4-7-8',
+  targetScreen: '/(breathing)/breathingStartPage',
+},
+{
+  title: '5-4-3-2-1 Method',
+  category: 'Grounding',
+  image: '5-4-3-2-1',
+  targetScreen: '/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage',
+}
+    // add more as needed
+];

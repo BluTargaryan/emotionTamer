@@ -11,6 +11,14 @@ interface UserWithPassword extends User {
   password: string;
 }
 
+interface ExerciseHistory {
+  id: string;
+  exerciseName: string;
+  exerciseType: string;
+  date: string;
+  duration: number; // in seconds
+}
+
 interface AppContextType {
   user: User | null;
   loading: boolean;
@@ -23,6 +31,8 @@ interface AppContextType {
   sendPasswordResetCode: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyPasswordResetCode: (code: string) => Promise<{ success: boolean; message: string }>;
   resetPassword: (newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
+  addExerciseHistory: (history: Omit<ExerciseHistory, 'id'>) => Promise<void>;
+  getExerciseHistory: () => Promise<ExerciseHistory[]>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -262,8 +272,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-
-
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('user');
@@ -411,6 +419,37 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const addExerciseHistory = async (history: Omit<ExerciseHistory, 'id'>) => {
+    try {
+      if (!user) return;
+
+      const historyData = await AsyncStorage.getItem(`history_${user.id}`);
+      const historyArray = historyData ? JSON.parse(historyData) : [];
+      
+      const newHistory: ExerciseHistory = {
+        ...history,
+        id: Date.now().toString(),
+      };
+      
+      historyArray.unshift(newHistory); // Add to beginning of array
+      await AsyncStorage.setItem(`history_${user.id}`, JSON.stringify(historyArray));
+    } catch (error) {
+      console.error('Error saving exercise history:', error);
+    }
+  };
+
+  const getExerciseHistory = async (): Promise<ExerciseHistory[]> => {
+    try {
+      if (!user) return [];
+
+      const historyData = await AsyncStorage.getItem(`history_${user.id}`);
+      return historyData ? JSON.parse(historyData) : [];
+    } catch (error) {
+      console.error('Error getting exercise history:', error);
+      return [];
+    }
+  };
+
   const value: AppContextType = {
     user,
     loading,
@@ -423,6 +462,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     sendPasswordResetCode,
     verifyPasswordResetCode,
     resetPassword,
+    addExerciseHistory,
+    getExerciseHistory,
   };
 
   return (

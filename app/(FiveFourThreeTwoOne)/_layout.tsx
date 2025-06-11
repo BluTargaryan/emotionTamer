@@ -4,7 +4,19 @@ import React from 'react'
 const FiveFourThreeTwoOneLayout = () => {
   return (
     <Stack>
-      <Stack.Screen name='FiveFourThreeTwoOneStartPage' options={{headerShown:false}}/>
+      <Stack.Screen name='FiveFourThreeTwoOneStartPage'
+      options={{
+        title: 'Exercise start',
+        headerStyle: {
+          backgroundColor: '#EDE6DE',
+        },
+        headerTintColor: '#1E4335',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 24
+        },
+      }}
+      />
       <Stack.Screen name='FiveFourThreeTwoOneStageOne' options={{headerShown:false}}/>
       <Stack.Screen name='FiveFourThreeTwoOneStageTwo' options={{headerShown:false}}/>
       <Stack.Screen name='FiveFourThreeTwoOneStageThree' options={{headerShown:false}}/>
