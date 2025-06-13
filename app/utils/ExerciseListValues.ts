@@ -16,6 +16,30 @@ export const images = {
   category: 'Grounding',
   image: '5-4-3-2-1',
   targetScreen: '/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage',
+},
+{
+  title: 'Box Breathing',
+  category: 'Breathing',
+  image: '4-7-8',
+  targetScreen: '/(box)/boxStartPage',
+},
+{
+  title: 'Alternate Nostril Breathing',
+  category: 'Breathing',
+  image: '4-7-8',
+  targetScreen: '/(alternateNostrils)/alternateNostrilsStartPage',
+},
+{
+  title: 'Soothing Sounds',
+  category: 'Sensory',
+  image: '5-4-3-2-1',
+  targetScreen: '/(soothingSounds)/soothingSoundsStartPage',
+},
+{
+  title: 'Color Noticing',
+  category: 'Mindfulness',
+  image: '5-4-3-2-1',
+  targetScreen: '/(colorNoticing)/colorNoticingStartPage',
 }
     // add more as needed
 ];

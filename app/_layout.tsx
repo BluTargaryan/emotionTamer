@@ -11,6 +11,10 @@ export default function RootLayout() {
         <Stack.Screen name="(main)" options={{headerShown:false}}/>
         <Stack.Screen name="(breathing)" options={{headerShown:false}}/>
         <Stack.Screen name="(FiveFourThreeTwoOne)" options={{headerShown:false}}/>
+        <Stack.Screen name="(box)" options={{headerShown:false}}/>
+        <Stack.Screen name="(alternateNostrils)" options={{headerShown:false}}/>
+        <Stack.Screen name="(soothingSounds)" options={{headerShown:false}}/>
+        <Stack.Screen name="(colorNoticing)" options={{headerShown:false}}/>
       </Stack>
     </AppProvider>
   );
