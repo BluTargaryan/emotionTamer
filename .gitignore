@@ -39,6 +39,6 @@ yarn-error.*
 app-example
 
 # sound assets
-/assets/sounds/white-noise.mp3
-assets/sounds/white-noise.mp3
-**/assets/sounds/white-noise.mp3
+/assets/sounds
+assets/sounds
+**/assets/sounds
