@@ -13,7 +13,7 @@ export const images = {
 },
 {
   title: '5-4-3-2-1 Method',
-  category: 'Grounding',
+  category: 'Sensory',
   image: '5-4-3-2-1',
   targetScreen: '/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage',
 },
@@ -37,9 +37,11 @@ export const images = {
 },
 {
   title: 'Color Noticing',
-  category: 'Mindfulness',
+  category: 'Sensory',
   image: '5-4-3-2-1',
   targetScreen: '/(colorNoticing)/colorNoticingStartPage',
 }
     // add more as needed
 ];
+
+export default exercises;

@@ -472,3 +472,5 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     </AppContext.Provider>
   );
 };
+
+export default AppProvider;

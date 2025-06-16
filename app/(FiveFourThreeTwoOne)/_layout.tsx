@@ -21,9 +21,8 @@ const FiveFourThreeTwoOneLayout = () => {
       <Stack.Screen name='FiveFourThreeTwoOneStageTwo' options={{headerShown:false}}/>
       <Stack.Screen name='FiveFourThreeTwoOneStageThree' options={{headerShown:false}}/>
       <Stack.Screen name='FiveFourThreeTwoOneStageFour' options={{headerShown:false}}/>
-      <Stack.Screen name='FiveFourThreeTwoOneStageFive' options={{headerShown:false}}/>z
-      <Stack.Screen name='FiveFourThreeTwoOneFinal' options={{headerShown:false}}/>z
-
+      <Stack.Screen name='FiveFourThreeTwoOneStageFive' options={{headerShown:false}}/>
+      <Stack.Screen name='FiveFourThreeTwoOneFinal' options={{headerShown:false}}/>
     </Stack>
   )
 }
