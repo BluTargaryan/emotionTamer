@@ -42,3 +42,5 @@ app-example
 /assets/sounds
 assets/sounds
 **/assets/sounds
+
+firebase.ts

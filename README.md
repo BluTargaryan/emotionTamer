@@ -1,50 +1,106 @@
-# Welcome to your Expo app 👋
+# Emotion Tamer 🧘‍♂️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mindfulness and emotional regulation app built with Expo, designed to help users manage their emotions through various breathing and sensory exercises.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Breathing Exercises**
+  - 4-7-8 Breathing
+  - Box Breathing
+  - Alternate Nostril Breathing
 
+- **Sensory Exercises**
+  - 5-4-3-2-1 Method
+  - Color Noticing
+  - Soothing Sounds
+
+- **User Features**
+  - User authentication
+  - Exercise history tracking
+  - Progress monitoring
+  - Customizable experience
+
+## Tech Stack
+
+- **Framework**: Expo (SDK 53)
+- **Navigation**: Expo Router
+- **Styling**: NativeWind (TailwindCSS)
+- **State Management**: React Context
+- **Storage**: AsyncStorage
+- **Animations**: React Native Reanimated
+- **UI Components**: Expo Vector Icons, Expo Blur
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (LTS version)
+- npm or yarn
+- Expo Go app (for mobile testing)
+- iOS Simulator (for iOS development)
+- Android Studio (for Android development)
+
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone [your-repo-url]
+   cd emotionTamer
+   ```
+
+2. Install dependencies
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Start the development server
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Run on your preferred platform
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app for physical device
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/
+├── (auth)/           # Authentication screens
+├── (main)/           # Main app screens
+├── (breathing)/      # Breathing exercise screens
+├── (FiveFourThreeTwoOne)/ # 5-4-3-2-1 exercise screens
+├── (box)/            # Box breathing screens
+├── (alternateNostrils)/ # Alternate nostril breathing screens
+├── (soothingSounds)/ # Soothing sounds screens
+├── (colorNoticing)/  # Color noticing exercise screens
+├── components/       # Reusable components
+├── context/         # React Context providers
+└── utils/           # Utility functions and constants
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
+- The app uses file-based routing with Expo Router
+- Styling is done using NativeWind (TailwindCSS)
+- Animations are implemented using React Native Reanimated
+- State management is handled through React Context
 
-To learn more about developing your project with Expo, look at the following resources:
+## Contributing
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Join the community
+## License
 
-Join our community of developers creating universal apps.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Acknowledgments
+
+- Built with [Expo](https://expo.dev)
+- Icons from [Expo Vector Icons](https://icons.expo.fyi)
+- Styling with [NativeWind](https://www.nativewind.dev)
