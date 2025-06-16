@@ -7,7 +7,15 @@ const ColorNoticingLayout = () => {
       <Stack.Screen 
         name="colorNoticingStartPage" 
         options={{
-          headerShown: false,
+          title: 'Exercise start',
+          headerStyle: {
+            backgroundColor: '#EDE6DE',
+          },
+          headerTintColor: '#1E4335',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            fontSize: 24
+          },
         }}
       />
       <Stack.Screen 
