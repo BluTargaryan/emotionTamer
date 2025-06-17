@@ -15,6 +15,7 @@ const MainLayout = () => {
             fontWeight: 'bold',
             fontSize: 24
           },
+          headerLeft: () => null,
         }}/>
         {/* <Stack.Screen name="home" options={{headerShown:false}}/> */}
     </Stack>
