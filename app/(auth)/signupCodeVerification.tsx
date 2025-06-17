@@ -27,7 +27,7 @@ const signupCodeVerification = () => {
         Alert.alert('Success', result.message, [
           {
             text: 'OK',
-            onPress: () => router.push('/signUpPasswordSetup')
+            onPress: () => router.push({ pathname: '/signUpPasswordSetup', params: { code } })
           }
         ])
       } else {

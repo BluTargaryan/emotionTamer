@@ -1,4 +1,4 @@
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
 import { Alert, Image, SafeAreaView, ScrollView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
@@ -9,6 +9,7 @@ import { useApp } from '../context/AppContext'
 
 const signUpPasswordSetup = () => {
   const { completeSignup } = useApp()
+  const { code } = useLocalSearchParams<{ code: string }>()
   
   // Form state
   const [password, setPassword] = useState('')
@@ -17,11 +18,14 @@ const signUpPasswordSetup = () => {
 
   const handleCompleteSignup = async () => {
     if (isSubmitting) return
-    
+    if (!code) {
+      Alert.alert('Error', 'No verification code found. Please start the signup process again.')
+      return
+    }
     setIsSubmitting(true)
     
     try {
-      const result = await completeSignup(password, confirmPassword)
+      const result = await completeSignup(code, password, confirmPassword)
       
       if (result.success) {
         // Show success message and navigate to main app (user is automatically signed in)

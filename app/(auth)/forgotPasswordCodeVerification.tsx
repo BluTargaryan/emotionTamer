@@ -27,7 +27,7 @@ const forgotPasswordCodeVerification = () => {
         Alert.alert('Success', result.message, [
           {
             text: 'OK',
-            onPress: () => router.push('/(auth)/forgotPasswordReset')
+            onPress: () => router.push({ pathname: '/(auth)/forgotPasswordReset', params: { code } })
           }
         ])
       } else {

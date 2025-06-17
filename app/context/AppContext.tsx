@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { db } from '../config/firebase';
 
 interface User {
   id: string;
@@ -27,10 +29,10 @@ interface AppContextType {
   signin: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   sendVerificationCode: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyCode: (code: string) => Promise<{ success: boolean; message: string }>;
-  completeSignup: (password: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
+  completeSignup: (code: string, password: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
   sendPasswordResetCode: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyPasswordResetCode: (code: string) => Promise<{ success: boolean; message: string }>;
-  resetPassword: (newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
+  resetPassword: (code: string, newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
   addExerciseHistory: (history: Omit<ExerciseHistory, 'id'>) => Promise<void>;
   getExerciseHistory: () => Promise<ExerciseHistory[]>;
 }
@@ -45,6 +47,11 @@ export const useApp = () => {
   return context;
 };
 
+const SESSION_CACHE_KEY = 'user_session_cache';
+const SESSION_CACHE_DURATION = 60 * 60 * 1000; // 1 hour in ms
+
+const EXERCISE_HISTORY_CACHE_KEY = 'exercise_history_cache';
+
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,10 +63,30 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loadAppData = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      
-      if (userData) setUser(JSON.parse(userData));
-        } catch (error) {
+      // 1. Try to load from AsyncStorage cache
+      const cache = await AsyncStorage.getItem(SESSION_CACHE_KEY);
+      if (cache) {
+        const { user: cachedUser, expiresAt } = JSON.parse(cache);
+        if (Date.now() < expiresAt) {
+          setUser(cachedUser);
+          setLoading(false);
+          return;
+        } else {
+          await AsyncStorage.removeItem(SESSION_CACHE_KEY);
+        }
+      }
+      // 2. Fallback to Firestore
+      const sessionDoc = await getDoc(doc(db, 'sessions', 'current'));
+      if (sessionDoc.exists()) {
+        const firestoreUser = sessionDoc.data() as User;
+        setUser(firestoreUser);
+        // Update cache
+        await AsyncStorage.setItem(
+          SESSION_CACHE_KEY,
+          JSON.stringify({ user: firestoreUser, expiresAt: Date.now() + SESSION_CACHE_DURATION })
+        );
+      }
+    } catch (error) {
       console.error('Error loading app data:', error);
     } finally {
       setLoading(false);
@@ -68,7 +95,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const saveUser = async (userData: User) => {
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
+      // Firestore: save user session to 'sessions/current'
+      await setDoc(doc(db, 'sessions', 'current'), userData);
+      // Cache in AsyncStorage with expiration
+      await AsyncStorage.setItem(
+        SESSION_CACHE_KEY,
+        JSON.stringify({ user: userData, expiresAt: Date.now() + SESSION_CACHE_DURATION })
+      );
       setUser(userData);
     } catch (error) {
       console.error('Error saving user:', error);
@@ -88,11 +121,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Check if user already exists
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const userExists = usersArray.find((u: any) => u.email === email);
-      if (userExists) {
+      const existingUsers = await getDoc(doc(db, 'users', email));
+      if (existingUsers.exists()) {
         return { success: false, message: 'User with this email already exists' };
       }
 
@@ -100,14 +130,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store verification data temporarily
-      const verificationData = {
+      await setDoc(doc(db, 'verification', verificationCode), {
         email: email,
         code: verificationCode,
         timestamp: Date.now(),
         verified: false
-      };
-      
-      await AsyncStorage.setItem('pendingVerification', JSON.stringify(verificationData));
+      });
 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -129,17 +157,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Get pending verification data
-      const pendingData = await AsyncStorage.getItem('pendingVerification');
-      if (!pendingData) {
+      const verificationDoc = await getDoc(doc(db, 'verification', code));
+      if (!verificationDoc.exists()) {
         return { success: false, message: 'No pending verification found. Please start the signup process again.' };
       }
 
-      const verificationData = JSON.parse(pendingData);
+      const verificationData = verificationDoc.data() as { email: string; code: string; timestamp: number; verified: boolean };
       
       // Check if code is expired (15 minutes)
       const isExpired = (Date.now() - verificationData.timestamp) > (15 * 60 * 1000);
       if (isExpired) {
-        await AsyncStorage.removeItem('pendingVerification');
+        await deleteDoc(doc(db, 'verification', code));
         return { success: false, message: 'Verification code has expired. Please start over.' };
       }
 
@@ -150,7 +178,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Mark as verified
       verificationData.verified = true;
-      await AsyncStorage.setItem('pendingVerification', JSON.stringify(verificationData));
+      await setDoc(doc(db, 'verification', code), verificationData);
 
       return { success: true, message: 'Email verified successfully!' };
     } catch (error) {
@@ -159,7 +187,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const completeSignup = async (password: string, confirmPassword: string): Promise<{ success: boolean; message: string }> => {
+  const completeSignup = async (code: string, password: string, confirmPassword: string): Promise<{ success: boolean; message: string }> => {
     try {
       // Validate passwords
       if (!password || !confirmPassword) {
@@ -174,13 +202,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, message: 'Password must be at least 6 characters' };
       }
 
-      // Get verified email
-      const pendingData = await AsyncStorage.getItem('pendingVerification');
-      if (!pendingData) {
+      // Get verified email using the verification code
+      const verificationDoc = await getDoc(doc(db, 'verification', code));
+      if (!verificationDoc.exists()) {
         return { success: false, message: 'No pending verification found. Please start the signup process again.' };
       }
 
-      const verificationData = JSON.parse(pendingData);
+      const verificationData = verificationDoc.data() as { email: string; code: string; timestamp: number; verified: boolean };
       
       if (!verificationData.verified) {
         return { success: false, message: 'Email not verified. Please verify your email first.' };
@@ -202,13 +230,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       // Add to registered users
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      usersArray.push(userData);
-      await AsyncStorage.setItem('registeredUsers', JSON.stringify(usersArray));
+      await setDoc(doc(db, 'users', verificationData.email), userData);
 
       // Clean up verification data
-      await AsyncStorage.removeItem('pendingVerification');
+      await deleteDoc(doc(db, 'verification', code));
 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -242,16 +267,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Check if user exists in registered users
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const registeredUser = usersArray.find((u: any) => u.email === email);
-      if (!registeredUser) {
+      const userDoc = await getDoc(doc(db, 'users', email));
+      if (!userDoc.exists()) {
         return { success: false, message: 'No account found with this email. Please sign up first.' };
       }
 
       // Verify password
-      if (registeredUser.password !== password) {
+      const userData = userDoc.data() as UserWithPassword;
+      if (userData.password !== password) {
         return { success: false, message: 'Incorrect password. Please try again.' };
       }
 
@@ -260,9 +283,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Save user session (remove password from session data for security)
       const userSession: User = {
-        id: registeredUser.id,
-        email: registeredUser.email,
-        name: registeredUser.name
+        id: userData.id,
+        email: userData.email,
+        name: userData.name
       };
       await saveUser(userSession);
       return { success: true, message: 'Successfully signed in!' };
@@ -274,7 +297,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('user');
+      // Firestore: remove user session from 'sessions/current'
+      await deleteDoc(doc(db, 'sessions', 'current'));
+      // Remove cache
+      await AsyncStorage.removeItem(SESSION_CACHE_KEY);
       setUser(null);
     } catch (error) {
       console.error('Error logging out:', error);
@@ -294,11 +320,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Check if user exists
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const userExists = usersArray.find((u: any) => u.email === email);
-      if (!userExists) {
+      const userDoc = await getDoc(doc(db, 'users', email));
+      if (!userDoc.exists()) {
         return { success: false, message: 'No account found with this email address' };
       }
 
@@ -306,14 +329,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store reset data temporarily
-      const resetData = {
+      await setDoc(doc(db, 'passwordReset', resetCode), {
         email: email,
         code: resetCode,
         timestamp: Date.now(),
         verified: false
-      };
-      
-      await AsyncStorage.setItem('pendingPasswordReset', JSON.stringify(resetData));
+      });
 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -335,17 +356,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Get pending reset data
-      const pendingData = await AsyncStorage.getItem('pendingPasswordReset');
-      if (!pendingData) {
+      const resetDoc = await getDoc(doc(db, 'passwordReset', code));
+      if (!resetDoc.exists()) {
         return { success: false, message: 'No pending password reset found. Please start the process again.' };
       }
 
-      const resetData = JSON.parse(pendingData);
+      const resetData = resetDoc.data() as { email: string; code: string; timestamp: number; verified: boolean };
       
       // Check if code is expired (15 minutes)
       const isExpired = (Date.now() - resetData.timestamp) > (15 * 60 * 1000);
       if (isExpired) {
-        await AsyncStorage.removeItem('pendingPasswordReset');
+        await deleteDoc(doc(db, 'passwordReset', code));
         return { success: false, message: 'Reset code has expired. Please start over.' };
       }
 
@@ -356,7 +377,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Mark as verified
       resetData.verified = true;
-      await AsyncStorage.setItem('pendingPasswordReset', JSON.stringify(resetData));
+      await setDoc(doc(db, 'passwordReset', code), resetData);
 
       return { success: true, message: 'Reset code verified successfully!' };
     } catch (error) {
@@ -365,7 +386,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const resetPassword = async (newPassword: string, confirmPassword: string): Promise<{ success: boolean; message: string }> => {
+  const resetPassword = async (code: string, newPassword: string, confirmPassword: string): Promise<{ success: boolean; message: string }> => {
     try {
       // Validate passwords
       if (!newPassword || !confirmPassword) {
@@ -381,33 +402,31 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Get verified reset data
-      const pendingData = await AsyncStorage.getItem('pendingPasswordReset');
-      if (!pendingData) {
+      const resetDoc = await getDoc(doc(db, 'passwordReset', code));
+      if (!resetDoc.exists()) {
         return { success: false, message: 'No pending password reset found. Please start the process again.' };
       }
 
-      const resetData = JSON.parse(pendingData);
+      const resetData = resetDoc.data() as { email: string; code: string; timestamp: number; verified: boolean };
       
       if (!resetData.verified) {
         return { success: false, message: 'Reset code not verified. Please verify your code first.' };
       }
 
       // Update user password in storage (in real app, this would update the backend)
-      const existingUsers = await AsyncStorage.getItem('registeredUsers');
-      const usersArray = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const userIndex = usersArray.findIndex((u: any) => u.email === resetData.email);
-      if (userIndex === -1) {
+      const userDoc = await getDoc(doc(db, 'users', resetData.email));
+      if (!userDoc.exists()) {
         return { success: false, message: 'User not found. Please contact support.' };
       }
 
       // Update the password (in real app, this would be hashed before storing)
-      usersArray[userIndex].password = newPassword;
+      const userData = userDoc.data() as UserWithPassword;
+      userData.password = newPassword;
       
-      await AsyncStorage.setItem('registeredUsers', JSON.stringify(usersArray));
+      await setDoc(doc(db, 'users', resetData.email), userData);
 
       // Clean up reset data
-      await AsyncStorage.removeItem('pendingPasswordReset');
+      await deleteDoc(doc(db, 'passwordReset', code));
 
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -423,18 +442,45 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       if (!user) return;
 
-      const historyData = await AsyncStorage.getItem(`history_${user.id}`);
-      const historyArray = historyData ? JSON.parse(historyData) : [];
-      
       const newHistory: ExerciseHistory = {
         ...history,
         id: Date.now().toString(),
       };
+
+      // 1. First save to Firebase
+      const historyDoc = await getDoc(doc(db, 'history', user.id));
+      const historyData = historyDoc.data() as { exercises: ExerciseHistory[] } | undefined;
+      const historyArray = historyData?.exercises ? historyData.exercises : [];
       
       historyArray.unshift(newHistory); // Add to beginning of array
-      await AsyncStorage.setItem(`history_${user.id}`, JSON.stringify(historyArray));
+      // Wrap array in object for Firestore
+      await setDoc(doc(db, 'history', user.id), { exercises: historyArray });
+
+      // 2. Then cache in AsyncStorage for offline access
+      const cacheKey = `${EXERCISE_HISTORY_CACHE_KEY}_${user.id}`;
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(historyArray));
+
     } catch (error) {
       console.error('Error saving exercise history:', error);
+      
+      // If Firebase fails, try to save to AsyncStorage only as fallback
+      try {
+        if (user) {
+          const cacheKey = `${EXERCISE_HISTORY_CACHE_KEY}_${user.id}`;
+          const cachedData = await AsyncStorage.getItem(cacheKey);
+          const cachedHistory = cachedData ? JSON.parse(cachedData) as ExerciseHistory[] : [];
+          
+          const newHistory: ExerciseHistory = {
+            ...history,
+            id: Date.now().toString(),
+          };
+          
+          cachedHistory.unshift(newHistory);
+          await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedHistory));
+        }
+      } catch (cacheError) {
+        console.error('Error saving to cache fallback:', cacheError);
+      }
     }
   };
 
@@ -442,8 +488,27 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       if (!user) return [];
 
-      const historyData = await AsyncStorage.getItem(`history_${user.id}`);
-      return historyData ? JSON.parse(historyData) : [];
+      const cacheKey = `${EXERCISE_HISTORY_CACHE_KEY}_${user.id}`;
+
+      // 1. First try to get from Firebase
+      try {
+        const historyDoc = await getDoc(doc(db, 'history', user.id));
+        const historyData = historyDoc.data() as { exercises: ExerciseHistory[] } | undefined;
+        const firebaseHistory = historyData?.exercises ? historyData.exercises : [];
+
+        // 2. Update AsyncStorage cache with Firebase data
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(firebaseHistory));
+        
+        return firebaseHistory;
+      } catch (firebaseError) {
+        console.error('Error getting history from Firebase:', firebaseError);
+        
+        // 3. Fallback to AsyncStorage if Firebase fails
+        const cachedData = await AsyncStorage.getItem(cacheKey);
+        const cachedHistory = cachedData ? JSON.parse(cachedData) as ExerciseHistory[] : [];
+        
+        return cachedHistory;
+      }
     } catch (error) {
       console.error('Error getting exercise history:', error);
       return [];

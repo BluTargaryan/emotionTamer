@@ -1,4 +1,4 @@
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
 import { Alert, Image, SafeAreaView, ScrollView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext'
 
 const forgotPasswordReset = () => {
   const { resetPassword } = useApp()
-  
+  const { code } = useLocalSearchParams()
   // Form state
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -21,7 +21,7 @@ const forgotPasswordReset = () => {
     setIsSubmitting(true)
     
     try {
-      const result = await resetPassword(newPassword, confirmPassword)
+      const result = await resetPassword(code as string, newPassword, confirmPassword)
       
       if (result.success) {
         // Show success message and navigate to signin
