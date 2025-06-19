@@ -133,6 +133,95 @@ const getPasswordResetEmailTemplate = (code: string, appName = 'EmotionTamer') =
 
 // API Routes
 
+// Serve homepage
+app.get('/', (req: Request, res: Response) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>EmotionTamer Email Service</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .container {
+                background: white;
+                border-radius: 12px;
+                padding: 40px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                text-align: center;
+                max-width: 500px;
+            }
+            h1 {
+                color: #4F46E5;
+                margin-bottom: 10px;
+            }
+            .status {
+                color: #10B981;
+                font-weight: 600;
+                margin: 20px 0;
+            }
+            .endpoints {
+                background: #F9FAFB;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+                text-align: left;
+            }
+            .endpoint {
+                margin: 10px 0;
+                font-family: monospace;
+                font-size: 14px;
+            }
+            .method {
+                background: #4F46E5;
+                color: white;
+                padding: 2px 8px;
+                border-radius: 4px;
+                margin-right: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🧘‍♀️ EmotionTamer</h1>
+            <p class="status">✅ Email Service Running</p>
+            <p>Your email service is successfully deployed and ready to handle authentication emails.</p>
+            
+            <div class="endpoints">
+                <h3>Available Endpoints:</h3>
+                <div class="endpoint">
+                    <span class="method">GET</span>/health
+                </div>
+                <div class="endpoint">
+                    <span class="method">POST</span>/send-verification-email
+                </div>
+                <div class="endpoint">
+                    <span class="method">POST</span>/send-password-reset-email
+                </div>
+                <div class="endpoint">
+                    <span class="method">POST</span>/test-email
+                </div>
+            </div>
+            
+            <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
+                This service handles email notifications for the EmotionTamer mobile app.
+            </p>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'OK', message: 'Email service is running' });
@@ -269,18 +358,21 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Email service running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  
-  // Verify email configuration on startup
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn('⚠️  Warning: EMAIL_USER and EMAIL_PASS environment variables are not set');
-    console.warn('   Please configure your email settings in the .env file');
-  } else {
-    console.log('✅ Email service configured and ready');
-  }
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Email service running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Verify email configuration on startup
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn('⚠️  Warning: EMAIL_USER and EMAIL_PASS environment variables are not set');
+      console.warn('   Please configure your email settings in the .env file');
+    } else {
+      console.log('✅ Email service configured and ready');
+    }
+  });
+}
 
-module.exports = app; 
+// Export for Vercel serverless functions
+export default app; 
