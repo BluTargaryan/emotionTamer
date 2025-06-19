@@ -2,8 +2,8 @@ import { router } from 'expo-router'
 import React from 'react'
 import { SafeAreaView, ScrollView, Text, View } from 'react-native'
 import CustomButton from '../components/CustomButton'
+import GamifiedStats from '../components/GamifiedStats'
 import HomeExercises from '../components/HomeExercises'
-import HomeHistory from '../components/HomeHistory'
 import { useApp } from '../context/AppContext'
 
 const Home = () => {
@@ -23,7 +23,8 @@ const Home = () => {
       </View>
     )}
     <HomeExercises />
-    <HomeHistory />
+    <GamifiedStats />
+    
     <CustomButton
     title='Log out'
     onPress={handleLogout}
