@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../config/firebase';
+import EmailService from '../services/emailService';
 
 interface User {
   id: string;
@@ -126,7 +127,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, message: 'User with this email already exists' };
       }
 
-      // Generate a verification code (in real app, this would be sent via email service)
+      // Generate a verification code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store verification data temporarily
@@ -137,13 +138,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         verified: false
       });
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // In a real app, you would send this code via email service
-      console.log('Verification code for', email, ':', verificationCode);
+      // Send email using the email service
+      const emailResult = await EmailService.sendVerificationEmail(email, verificationCode);
       
-      return { success: true, message: `Verification code sent to ${email}` };
+      if (!emailResult.success) {
+        // Clean up verification data if email sending failed
+        await deleteDoc(doc(db, 'verification', verificationCode));
+        return { success: false, message: emailResult.message };
+      }
+
+      return { success: true, message: emailResult.message };
     } catch (error) {
       console.error('Error sending verification code:', error);
       return { success: false, message: 'An error occurred while sending verification code' };
@@ -325,7 +329,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, message: 'No account found with this email address' };
       }
 
-      // Generate a reset code (in real app, this would be sent via email service)
+      // Generate a reset code
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store reset data temporarily
@@ -336,13 +340,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         verified: false
       });
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // In a real app, you would send this code via email service
-      console.log('Password reset code for', email, ':', resetCode);
+      // Send email using the email service
+      const emailResult = await EmailService.sendPasswordResetEmail(email, resetCode);
       
-      return { success: true, message: `Password reset code sent to ${email}` };
+      if (!emailResult.success) {
+        // Clean up reset data if email sending failed
+        await deleteDoc(doc(db, 'passwordReset', resetCode));
+        return { success: false, message: emailResult.message };
+      }
+
+      return { success: true, message: emailResult.message };
     } catch (error) {
       console.error('Error sending password reset code:', error);
       return { success: false, message: 'An error occurred while sending reset code' };
