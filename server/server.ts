@@ -7,10 +7,14 @@ import nodemailer from 'nodemailer';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.PORT || '3001');
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: true, // Allow all origins in development
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -266,8 +270,9 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Email service running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Verify email configuration on startup
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {

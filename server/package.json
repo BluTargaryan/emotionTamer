@@ -4,9 +4,10 @@
   "description": "Backend server for EmotionTamer app with email functionality",
   "main": "server.ts",
   "scripts": {
-    "start": "tsc && node dist/server.js",
+    "start": "tsc && node dist/server.ts",
     "dev": "nodemon --exec ts-node server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build:start": "npm run build && npm start"
   },
   "dependencies": {
     "express": "^4.18.2",
