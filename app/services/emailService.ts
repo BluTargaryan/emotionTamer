@@ -1,6 +1,6 @@
 // Email service for communicating with the nodemailer server
 // For React Native development - replace with your computer's IP address
-const EMAIL_SERVER_URL =  'http://10.110.198.132:3001'; 
+const EMAIL_SERVER_URL =  'https://emotion-tamer-email-server.vercel.app'; 
 
 interface EmailResponse {
   success: boolean;
