@@ -43,3 +43,19 @@ app-example
 assets/sounds
 **/assets/sounds
 
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+junit.xml
+test-results/
+
+# Jest
+__tests__/coverage/
+jest-coverage/
+
+# Server testing
+server/coverage/
+server/*.lcov
+server/test-results/
+
