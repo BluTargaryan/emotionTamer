@@ -9,12 +9,12 @@ const ColorNoticingExercise = () => {
     const [itemsLeft, setItemsLeft] = useState(parseInt(count as string) || 5);
     
     const colors = {
-        red: { value: '#EF4444', displayName: 'Red' },
-        blue: { value: '#3B82F6', displayName: 'Blue' },
-        green: { value: '#10B981', displayName: 'Green' },
-        yellow: { value: '#F59E0B', displayName: 'Yellow' },
-        purple: { value: '#8B5CF6', displayName: 'Purple' },
-        orange: { value: '#F97316', displayName: 'Orange' },
+        red: { value: 'bg-red-500', displayName: 'Red' },
+        blue: { value: 'bg-blue-500', displayName: 'Blue' },
+        green: { value: 'bg-green-500', displayName: 'Green' },
+        yellow: { value: 'bg-yellow-500', displayName: 'Yellow' },
+        purple: { value: 'bg-purple-500', displayName: 'Purple' },
+        orange: { value: 'bg-orange-500', displayName: 'Orange' },
     };
 
     const selectedColor = colors[color as keyof typeof colors] || colors.red;
@@ -37,8 +37,7 @@ const ColorNoticingExercise = () => {
                 
                 <View className='flex flex-col gap-4 items-center'>
                     <View 
-                        className='w-20 h-20 rounded-full border-4 border-primary'
-                        style={{ backgroundColor: selectedColor.value }}
+                        className={`w-20 h-20 rounded-full border-4 border-primary ${selectedColor.value}`}
                     />
                     <Text className='text-xl font-bold text-primary'>{selectedColor.displayName}</Text>
                 </View>

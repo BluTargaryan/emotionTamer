@@ -14,7 +14,7 @@ jest.mock('expo-router', () => ({
 jest.mock('../components/CustomButton', () => {
   const { TouchableOpacity, Text } = require('react-native');
   return ({ title, onPress, bgColor }: any) => (
-    <TouchableOpacity testID={`button-${title.toLowerCase()}`} onPress={onPress}>
+    <TouchableOpacity testID={`button-${title.toLowerCase().replace(/\s+/g, '-')}`} onPress={onPress}>
       <Text>{title}</Text>
     </TouchableOpacity>
   );
@@ -106,17 +106,18 @@ describe('4-7-8 Breathing Exercise Flow', () => {
     });
 
     it('should hide error message when valid cycles are entered', () => {
-      const { getByTestId, getByPlaceholderText, queryByText } = render(<BreathingStartPage />);
+      const { getByTestId, getByPlaceholderText, getByText } = render(<BreathingStartPage />);
       
       // First trigger error
       fireEvent.press(getByTestId('button-start'));
-      expect(queryByText('No number of cycles? Please set the number of cycles to continue')).toBeTruthy();
+      const errorElement = getByText('No number of cycles? Please set the number of cycles to continue');
+      expect(errorElement).toBeTruthy();
       
       // Then enter valid cycles
       fireEvent.changeText(getByPlaceholderText('Set cycles (number of rounds)'), '3');
       
-      // Error should be hidden
-      expect(queryByText('No number of cycles? Please set the number of cycles to continue')).toBeFalsy();
+      // Error should be hidden (element still exists but has 'hidden' class)
+      expect(errorElement.props.className).toContain('hidden');
     });
   });
 
@@ -186,7 +187,7 @@ describe('4-7-8 Breathing Exercise Flow', () => {
     it('should render hold stage with 7-second countdown', () => {
       const { getByText } = render(<BreathingStageHold />);
       
-      expect(getByText('Hold')).toBeTruthy();
+      expect(getByText('Hold your breath')).toBeTruthy();
       expect(getByText('7 seconds left')).toBeTruthy();
       expect(getByText('Cycle 1 of 2')).toBeTruthy();
     });
@@ -260,18 +261,21 @@ describe('4-7-8 Breathing Exercise Flow', () => {
     it('should render final stage with completion message', () => {
       const { getByText } = render(<BreathingStageFinal />);
       
-      expect(getByText('Well done!')).toBeTruthy();
-      expect(getByText(/You have completed 3 cycles/)).toBeTruthy();
+      expect(getByText('Congratulations!')).toBeTruthy();
+      expect(getByText('You successfully completed')).toBeTruthy();
+      expect(getByText('3 cycles')).toBeTruthy();
+      expect(getByText('of 4-7-8 breathing')).toBeTruthy();
     });
 
-    it('should call addExerciseHistory when user is authenticated', async () => {
+    it('should call addExerciseHistory with correct data structure', async () => {
       render(<BreathingStageFinal />);
       
       await waitFor(() => {
         expect(mockAddExerciseHistory).toHaveBeenCalledWith({
-          exerciseName: '4-7-8 breathing',
-          duration: expect.any(Number),
-          cycles: 3,
+          exerciseName: '4-7-8 Breathing',
+          exerciseType: 'Breathing exercise',
+          date: expect.any(String),
+          duration: 57, // 3 cycles * 19 seconds per cycle
         });
       });
     });
@@ -279,7 +283,7 @@ describe('4-7-8 Breathing Exercise Flow', () => {
     it('should navigate to home when done button is pressed', () => {
       const { getByTestId } = render(<BreathingStageFinal />);
       
-      fireEvent.press(getByTestId('button-done'));
+      fireEvent.press(getByTestId('button-to-home'));
       
       expect(router.replace).toHaveBeenCalledWith('/(main)/home');
     });
@@ -291,7 +295,7 @@ describe('4-7-8 Breathing Exercise Flow', () => {
       mockUseLocalSearchParams.mockReturnValue({});
       const { getByTestId, getByPlaceholderText, rerender } = render(<BreathingStartPage />);
       
-             fireEvent.changeText(getByPlaceholderText('Set cycles (number of rounds)'), '2');
+      fireEvent.changeText(getByPlaceholderText('Set cycles (number of rounds)'), '2');
       fireEvent.press(getByTestId('button-start'));
       
       expect(router.replace).toHaveBeenCalledWith('/(breathing)/breathingStageOne?totalCycles=2&currentCycle=1');

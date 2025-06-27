@@ -1,6 +1,27 @@
 // Jest setup file for React Native testing
 import 'react-native-gesture-handler/jestSetup';
 
+// Ensure NODE_ENV is set to test for Babel configuration
+(process.env as any).NODE_ENV = 'test';
+
+// CRITICAL: Inject the missing CSS interop function into the global require cache
+// This must be done BEFORE any components are loaded
+const mockGetUseOfValueInStyleWarning = () => () => {};
+
+// Override require to inject the function for react-native-css-interop
+const originalRequire = require;
+(global as any).require = function(id: string) {
+  if (id === 'react-native-css-interop') {
+    return {
+      getUseOfValueInStyleWarning: mockGetUseOfValueInStyleWarning,
+      jsx: require('react').createElement,
+      jsxs: require('react').createElement,
+      Fragment: require('react').Fragment,
+    };
+  }
+  return originalRequire.call(this, id);
+};
+
 // Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -111,10 +132,23 @@ jest.mock('expo-av', () => ({
 // Mock React Native modules
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
-// Mock NativeWind
+// Mock RefreshControl 
+jest.mock('react-native/Libraries/Components/RefreshControl/RefreshControl', () => 'RefreshControl');
+
+// Mock NativeWind and style functions
 jest.mock('nativewind', () => ({
   styled: (Component: any) => Component,
 }));
+
+// Mock CSS interop functions globally to prevent errors
+(global as any).getUseOfValueInStyleWarning = () => () => {};
+
+// Set up NativeWind test environment
+(global as any).__CSS_INTEROP__ = {
+  enabled: false,
+};
+
+// Remove duplicate require override - using the one above
 
 // Mock Victory Native charts
 jest.mock('victory-native', () => ({

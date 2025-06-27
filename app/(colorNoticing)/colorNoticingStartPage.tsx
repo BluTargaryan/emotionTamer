@@ -8,12 +8,12 @@ const ColorNoticingStartPage = () => {
     const [itemCount, setItemCount] = useState('5');
 
     const colors = [
-        { name: 'red', value: '#EF4444', displayName: 'Red' },
-        { name: 'blue', value: '#3B82F6', displayName: 'Blue' },
-        { name: 'green', value: '#10B981', displayName: 'Green' },
-        { name: 'yellow', value: '#F59E0B', displayName: 'Yellow' },
-        { name: 'purple', value: '#8B5CF6', displayName: 'Purple' },
-        { name: 'orange', value: '#F97316', displayName: 'Orange' },
+        { name: 'red', value: 'bg-red-500', displayName: 'Red' },
+        { name: 'blue', value: 'bg-blue-500', displayName: 'Blue' },
+        { name: 'green', value: 'bg-green-500', displayName: 'Green' },
+        { name: 'yellow', value: 'bg-yellow-500', displayName: 'Yellow' },
+        { name: 'purple', value: 'bg-purple-500', displayName: 'Purple' },
+            { name: 'orange', value: 'bg-orange-500', displayName: 'Orange' },
     ];
 
     const handleStart = () => {
@@ -40,10 +40,9 @@ const ColorNoticingStartPage = () => {
                             <TouchableOpacity
                                 key={color.name}
                                 onPress={() => setSelectedColor(color.name)}
-                                className={`w-16 h-16 rounded-full border-4 ${
+                                className={`w-16 h-16 rounded-full border-4 ${color.value} ${
                                     selectedColor === color.name ? 'border-primary' : 'border-gray-300'
                                 }`}
-                                style={{ backgroundColor: color.value }}
                             />
                         ))}
                     </View>

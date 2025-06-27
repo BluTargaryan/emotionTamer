@@ -74,6 +74,7 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
+    "testEnvironment": "node",
     "setupFilesAfterEnv": [
       "@testing-library/jest-native/extend-expect",
       "<rootDir>/jest.setup.ts"
@@ -106,7 +107,9 @@
       "json"
     ],
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1"
+      "^@/(.*)$": "<rootDir>/$1",
+      "^react-native-css-interop$": "<rootDir>/__mocks__/react-native-css-interop.js",
+      "^react-native-css-interop/jsx-runtime$": "<rootDir>/__mocks__/react-native-css-interop/jsx-runtime.js"
     }
   }
 }

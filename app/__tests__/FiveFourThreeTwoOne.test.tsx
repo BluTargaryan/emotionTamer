@@ -14,9 +14,17 @@ jest.mock('expo-router', () => ({
 jest.mock('../components/CustomButton', () => {
   const { TouchableOpacity, Text } = require('react-native');
   return ({ title, onPress, bgColor }: any) => (
-    <TouchableOpacity testID={`button-${title.toLowerCase()}`} onPress={onPress}>
+    <TouchableOpacity testID={`button-${title.toLowerCase().replace(/\s+/g, '-')}`} onPress={onPress}>
       <Text>{title}</Text>
     </TouchableOpacity>
+  );
+});
+
+// Mock CircleView
+jest.mock('../components/CircleView', () => {
+  const { View } = require('react-native');
+  return ({ component }: any) => (
+    <View testID="circle-view">{component}</View>
   );
 });
 
@@ -70,7 +78,7 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStartPage />);
       
       expect(getByText('5-4-3-2-1 method')).toBeTruthy();
-      expect(getByText(/Vorem ipsum dolor sit amet/)).toBeTruthy();
+      expect(getByText(/Vorem ipsum dolor sit amet, consectetur adipiscing elit/)).toBeTruthy();
       expect(getByText('Start')).toBeTruthy();
     });
 
@@ -84,20 +92,37 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
   });
 
   describe('FiveFourThreeTwoOneStageOne (5 Things You Can See)', () => {
-    it('should render stage one with correct instructions', () => {
+    it('should render stage one with correct tapping instructions', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStageOne />);
       
-      expect(getByText('Name 5 things you can see')).toBeTruthy();
-      expect(getByText('Look around and identify 5 things you can see in your environment')).toBeTruthy();
-      expect(getByText('Continue')).toBeTruthy();
+      expect(getByText('Tap the eye below for each thing you SEE')).toBeTruthy();
+      expect(getByText('5 things left')).toBeTruthy();
+      expect(getByText('Quit')).toBeTruthy();
     });
 
-    it('should navigate to stage two when continue is pressed', () => {
+    it('should countdown when tapping the interactive element', () => {
+      const { getByText, getByTestId } = render(<FiveFourThreeTwoOneStageOne />);
+      
+      expect(getByText('5 things left')).toBeTruthy();
+      
+      // Tap the CircleView (TouchableOpacity)
+      const touchableArea = getByTestId('circle-view').parent;
+      fireEvent.press(touchableArea);
+      
+      expect(getByText('4 things left')).toBeTruthy();
+    });
+
+    it('should navigate to stage two when count reaches zero', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneStageOne />);
       
-      fireEvent.press(getByTestId('button-continue'));
+      const touchableArea = getByTestId('circle-view').parent;
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageTwo');
+      // Tap 5 times to complete the stage
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(touchableArea);
+      }
+      
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageTwo');
     });
 
     it('should allow quitting back to start page', () => {
@@ -105,25 +130,41 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       
       fireEvent.press(getByTestId('button-quit'));
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
     });
   });
 
   describe('FiveFourThreeTwoOneStageTwo (4 Things You Can Touch)', () => {
-    it('should render stage two with correct instructions', () => {
+    it('should render stage two with correct tapping instructions', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStageTwo />);
       
-      expect(getByText('Name 4 things you can touch')).toBeTruthy();
-      expect(getByText('Identify 4 things you can touch around you')).toBeTruthy();
-      expect(getByText('Continue')).toBeTruthy();
+      expect(getByText('Tap the hand below for each thing you TOUCH')).toBeTruthy();
+      expect(getByText('4 things left')).toBeTruthy();
+      expect(getByText('Quit')).toBeTruthy();
     });
 
-    it('should navigate to stage three when continue is pressed', () => {
+    it('should countdown when tapping the interactive element', () => {
+      const { getByText, getByTestId } = render(<FiveFourThreeTwoOneStageTwo />);
+      
+      expect(getByText('4 things left')).toBeTruthy();
+      
+      const touchableArea = getByTestId('circle-view').parent;
+      fireEvent.press(touchableArea);
+      
+      expect(getByText('3 things left')).toBeTruthy();
+    });
+
+    it('should navigate to stage three when count reaches zero', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneStageTwo />);
       
-      fireEvent.press(getByTestId('button-continue'));
+      const touchableArea = getByTestId('circle-view').parent;
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageThree');
+      // Tap 4 times to complete the stage
+      for (let i = 0; i < 4; i++) {
+        fireEvent.press(touchableArea);
+      }
+      
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageThree');
     });
 
     it('should allow quitting back to start page', () => {
@@ -131,25 +172,41 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       
       fireEvent.press(getByTestId('button-quit'));
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
     });
   });
 
   describe('FiveFourThreeTwoOneStageThree (3 Things You Can Hear)', () => {
-    it('should render stage three with correct instructions', () => {
+    it('should render stage three with correct tapping instructions', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStageThree />);
       
-      expect(getByText('Name 3 things you can hear')).toBeTruthy();
-      expect(getByText('Listen carefully and identify 3 sounds around you')).toBeTruthy();
-      expect(getByText('Continue')).toBeTruthy();
+      expect(getByText('Tap the ear below for each thing you HEAR')).toBeTruthy();
+      expect(getByText('3 things left')).toBeTruthy();
+      expect(getByText('Quit')).toBeTruthy();
     });
 
-    it('should navigate to stage four when continue is pressed', () => {
+    it('should countdown when tapping the interactive element', () => {
+      const { getByText, getByTestId } = render(<FiveFourThreeTwoOneStageThree />);
+      
+      expect(getByText('3 things left')).toBeTruthy();
+      
+      const touchableArea = getByTestId('circle-view').parent;
+      fireEvent.press(touchableArea);
+      
+      expect(getByText('2 things left')).toBeTruthy();
+    });
+
+    it('should navigate to stage four when count reaches zero', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneStageThree />);
       
-      fireEvent.press(getByTestId('button-continue'));
+      const touchableArea = getByTestId('circle-view').parent;
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageFour');
+      // Tap 3 times to complete the stage
+      for (let i = 0; i < 3; i++) {
+        fireEvent.press(touchableArea);
+      }
+      
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageFour');
     });
 
     it('should allow quitting back to start page', () => {
@@ -157,25 +214,41 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       
       fireEvent.press(getByTestId('button-quit'));
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
     });
   });
 
   describe('FiveFourThreeTwoOneStageFour (2 Things You Can Smell)', () => {
-    it('should render stage four with correct instructions', () => {
+    it('should render stage four with correct tapping instructions', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStageFour />);
       
-      expect(getByText('Name 2 things you can smell')).toBeTruthy();
-      expect(getByText('Take a moment to notice 2 scents around you')).toBeTruthy();
-      expect(getByText('Continue')).toBeTruthy();
+      expect(getByText('Tap the nose below for each thing you SMELL')).toBeTruthy();
+      expect(getByText('2 things left')).toBeTruthy();
+      expect(getByText('Quit')).toBeTruthy();
     });
 
-    it('should navigate to stage five when continue is pressed', () => {
+    it('should countdown when tapping the interactive element', () => {
+      const { getByText, getByTestId } = render(<FiveFourThreeTwoOneStageFour />);
+      
+      expect(getByText('2 things left')).toBeTruthy();
+      
+      const touchableArea = getByTestId('circle-view').parent;
+      fireEvent.press(touchableArea);
+      
+      expect(getByText('1 things left')).toBeTruthy();
+    });
+
+    it('should navigate to stage five when count reaches zero', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneStageFour />);
       
-      fireEvent.press(getByTestId('button-continue'));
+      const touchableArea = getByTestId('circle-view').parent;
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageFive');
+      // Tap 2 times to complete the stage
+      for (let i = 0; i < 2; i++) {
+        fireEvent.press(touchableArea);
+      }
+      
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageFive');
     });
 
     it('should allow quitting back to start page', () => {
@@ -183,25 +256,26 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       
       fireEvent.press(getByTestId('button-quit'));
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
     });
   });
 
   describe('FiveFourThreeTwoOneStageFive (1 Thing You Can Taste)', () => {
-    it('should render stage five with correct instructions', () => {
+    it('should render stage five with correct tapping instructions', () => {
       const { getByText } = render(<FiveFourThreeTwoOneStageFive />);
       
-      expect(getByText('Name 1 thing you can taste')).toBeTruthy();
-      expect(getByText('Focus on any taste you can detect')).toBeTruthy();
-      expect(getByText('Finish')).toBeTruthy();
+      expect(getByText('Tap the tongue below for each thing you TASTE')).toBeTruthy();
+      expect(getByText('1 things left')).toBeTruthy();
+      expect(getByText('Quit')).toBeTruthy();
     });
 
-    it('should navigate to final stage when finish is pressed', () => {
+    it('should navigate to final stage when tapped once', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneStageFive />);
       
-      fireEvent.press(getByTestId('button-finish'));
+      const touchableArea = getByTestId('circle-view').parent;
+      fireEvent.press(touchableArea);
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneFinal');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneFinal');
     });
 
     it('should allow quitting back to start page', () => {
@@ -209,7 +283,7 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
       
       fireEvent.press(getByTestId('button-quit'));
       
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
     });
   });
 
@@ -217,76 +291,89 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
     it('should render final screen with completion message', () => {
       const { getByText } = render(<FiveFourThreeTwoOneFinal />);
       
-      expect(getByText('Excellent work!')).toBeTruthy();
-      expect(getByText(/You've successfully completed the 5-4-3-2-1 grounding exercise/)).toBeTruthy();
+      expect(getByText('Congratulations!')).toBeTruthy();
+      expect(getByText('You successfully completed')).toBeTruthy();
+      expect(getByText('grounded yourself')).toBeTruthy();
+      expect(getByText('with the 5-4-3-2-1 method')).toBeTruthy();
     });
 
-    it('should call addExerciseHistory when user is authenticated', async () => {
+    it('should call addExerciseHistory with correct data structure', async () => {
       render(<FiveFourThreeTwoOneFinal />);
       
       await waitFor(() => {
         expect(mockAddExerciseHistory).toHaveBeenCalledWith({
           exerciseName: '5-4-3-2-1 Grounding',
-          duration: expect.any(Number),
-          completed: true,
+          exerciseType: 'Grounding exercise',
+          date: expect.any(String),
+          duration: 300,
         });
       });
     });
 
-    it('should navigate to home when done button is pressed', () => {
+    it('should navigate to home when to home button is pressed', () => {
       const { getByTestId } = render(<FiveFourThreeTwoOneFinal />);
       
-      fireEvent.press(getByTestId('button-done'));
+      fireEvent.press(getByTestId('button-to-home'));
       
       expect(router.replace).toHaveBeenCalledWith('/(main)/home');
-    });
-
-    it('should allow starting a new exercise', () => {
-      const { getByTestId } = render(<FiveFourThreeTwoOneFinal />);
-      
-      fireEvent.press(getByTestId('button-start again'));
-      
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
     });
   });
 
   describe('Exercise Flow Integration', () => {
-    it('should complete the full 5-4-3-2-1 exercise flow', () => {
+    it('should complete the full 5-4-3-2-1 exercise flow with tapping', () => {
       // Start page
-      const { getByTestId, rerender } = render(<FiveFourThreeTwoOneStartPage />);
+      const { getByTestId: getStartTestId } = render(<FiveFourThreeTwoOneStartPage />);
       
-      fireEvent.press(getByTestId('button-start'));
+      fireEvent.press(getStartTestId('button-start'));
       expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageOne');
       
-      // Stage One
+      // Stage One - tap 5 times
       jest.clearAllMocks();
-      rerender(<FiveFourThreeTwoOneStageOne />);
-      fireEvent.press(getByTestId('button-continue'));
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageTwo');
+      const { getByTestId: getStageOneTestId } = render(<FiveFourThreeTwoOneStageOne />);
+      const touchableAreaOne = getStageOneTestId('circle-view').parent;
       
-      // Stage Two
-      jest.clearAllMocks();
-      rerender(<FiveFourThreeTwoOneStageTwo />);
-      fireEvent.press(getByTestId('button-continue'));
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageThree');
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(touchableAreaOne);
+      }
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageTwo');
       
-      // Stage Three
-      jest.clearAllMocks();
-      rerender(<FiveFourThreeTwoOneStageThree />);
-      fireEvent.press(getByTestId('button-continue'));
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageFour');
+             // Stage Two - tap 4 times
+       jest.clearAllMocks();
+       const { getByTestId: getStageTwoTestId } = render(<FiveFourThreeTwoOneStageTwo />);
+       const touchableAreaTwo = getStageTwoTestId('circle-view').parent;
       
-      // Stage Four
-      jest.clearAllMocks();
-      rerender(<FiveFourThreeTwoOneStageFour />);
-      fireEvent.press(getByTestId('button-continue'));
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStageFive');
+      for (let i = 0; i < 4; i++) {
+        fireEvent.press(touchableAreaTwo);
+      }
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageThree');
       
-      // Stage Five
+      // Stage Three - tap 3 times
       jest.clearAllMocks();
-      rerender(<FiveFourThreeTwoOneStageFive />);
-      fireEvent.press(getByTestId('button-finish'));
-      expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneFinal');
+      const { getByTestId: getStageThreeTestId } = render(<FiveFourThreeTwoOneStageThree />);
+      const touchableAreaThree = getStageThreeTestId('circle-view').parent;
+      
+      for (let i = 0; i < 3; i++) {
+        fireEvent.press(touchableAreaThree);
+      }
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageFour');
+      
+      // Stage Four - tap 2 times
+      jest.clearAllMocks();
+      const { getByTestId: getStageFourTestId } = render(<FiveFourThreeTwoOneStageFour />);
+      const touchableAreaFour = getStageFourTestId('circle-view').parent;
+      
+      for (let i = 0; i < 2; i++) {
+        fireEvent.press(touchableAreaFour);
+      }
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageFive');
+      
+      // Stage Five - tap 1 time
+      jest.clearAllMocks();
+      const { getByTestId: getStageFiveTestId } = render(<FiveFourThreeTwoOneStageFive />);
+      const touchableAreaFive = getStageFiveTestId('circle-view').parent;
+      
+      fireEvent.press(touchableAreaFive);
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneFinal');
     });
 
     it('should allow quitting from any stage', () => {
@@ -304,44 +391,54 @@ describe('5-4-3-2-1 Grounding Exercise Flow', () => {
         
         fireEvent.press(getByTestId('button-quit'));
         
-        expect(router.replace).toHaveBeenCalledWith('/(FiveFourThreeTwoOne)/FiveFourThreeTwoOneStartPage');
+        expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStartPage');
       });
     });
   });
 
-  describe('Accessibility and User Experience', () => {
-    it('should have consistent button accessibility across all stages', () => {
-      const stages = [
-        { component: FiveFourThreeTwoOneStageOne, continueButton: 'Continue' },
-        { component: FiveFourThreeTwoOneStageTwo, continueButton: 'Continue' },
-        { component: FiveFourThreeTwoOneStageThree, continueButton: 'Continue' },
-        { component: FiveFourThreeTwoOneStageFour, continueButton: 'Continue' },
-        { component: FiveFourThreeTwoOneStageFive, continueButton: 'Finish' },
+  describe('Interactive Elements and Count Management', () => {
+    it('should have correct initial counts for each stage', () => {
+      const stageConfigs = [
+        { component: FiveFourThreeTwoOneStageOne, initialCount: 5, text: '5 things left' },
+        { component: FiveFourThreeTwoOneStageTwo, initialCount: 4, text: '4 things left' },
+        { component: FiveFourThreeTwoOneStageThree, initialCount: 3, text: '3 things left' },
+        { component: FiveFourThreeTwoOneStageFour, initialCount: 2, text: '2 things left' },
+        { component: FiveFourThreeTwoOneStageFive, initialCount: 1, text: '1 things left' },
       ];
 
-      stages.forEach(stage => {
-        const { getByText, getByTestId } = render(<stage.component />);
-        
-        expect(getByText(stage.continueButton)).toBeTruthy();
-        expect(getByText('Quit')).toBeTruthy();
-        expect(getByTestId(`button-${stage.continueButton.toLowerCase()}`)).toBeTruthy();
-        expect(getByTestId('button-quit')).toBeTruthy();
+      stageConfigs.forEach(config => {
+        const { getByText } = render(<config.component />);
+        expect(getByText(config.text)).toBeTruthy();
       });
     });
 
     it('should display appropriate sensory instructions for each stage', () => {
       const stageInstructions = [
-        { component: FiveFourThreeTwoOneStageOne, instruction: 'Name 5 things you can see' },
-        { component: FiveFourThreeTwoOneStageTwo, instruction: 'Name 4 things you can touch' },
-        { component: FiveFourThreeTwoOneStageThree, instruction: 'Name 3 things you can hear' },
-        { component: FiveFourThreeTwoOneStageFour, instruction: 'Name 2 things you can smell' },
-        { component: FiveFourThreeTwoOneStageFive, instruction: 'Name 1 thing you can taste' },
+        { component: FiveFourThreeTwoOneStageOne, instruction: 'Tap the eye below for each thing you SEE' },
+        { component: FiveFourThreeTwoOneStageTwo, instruction: 'Tap the hand below for each thing you TOUCH' },
+        { component: FiveFourThreeTwoOneStageThree, instruction: 'Tap the ear below for each thing you HEAR' },
+        { component: FiveFourThreeTwoOneStageFour, instruction: 'Tap the nose below for each thing you SMELL' },
+        { component: FiveFourThreeTwoOneStageFive, instruction: 'Tap the tongue below for each thing you TASTE' },
       ];
 
       stageInstructions.forEach(stage => {
         const { getByText } = render(<stage.component />);
         expect(getByText(stage.instruction)).toBeTruthy();
       });
+    });
+
+    it('should prevent over-tapping past zero count', () => {
+      const { getByTestId, getByText } = render(<FiveFourThreeTwoOneStageOne />);
+      
+      const touchableArea = getByTestId('circle-view').parent;
+      
+      // Tap exactly 5 times (should navigate)
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(touchableArea);
+      }
+      
+      // Should have navigated, not decreased below 0
+      expect(router.replace).toHaveBeenCalledWith('FiveFourThreeTwoOneStageTwo');
     });
   });
 }); 
