@@ -52,6 +52,7 @@ A comprehensive mindfulness and emotional regulation app built with Expo, design
 - **Charts & Progress**: Victory Native, React Native Circular Progress
 - **Icons**: Expo Vector Icons
 - **Media**: Expo AV (audio playback)
+- **Testing**: Jest + React Native Testing Library
 
 ### **Backend Services**
 - **Database**: Firebase Firestore
@@ -59,16 +60,19 @@ A comprehensive mindfulness and emotional regulation app built with Expo, design
 - **Email Service**: Node.js + Express + Nodemailer (hosted on Vercel)
 - **Local Storage**: AsyncStorage (with 1-hour caching)
 
-### **Additional Libraries**
-- **UI Components**: 
-  - Expo Blur
-  - React Native SVG
-  - React Native Progress
-  - Custom components with Tailwind styling
-- **Development Tools**:
-  - TypeScript for type safety
-  - ESLint for code quality
-  - Metro bundler with NativeWind integration
+### **Testing Infrastructure**
+- **Framework**: Jest with React Native Testing Library
+- **Coverage**: Full test coverage tracking
+- **Mock System**: 
+  - Firebase services (Auth, Firestore)
+  - React Native components
+  - Expo modules
+  - Third-party libraries
+- **Test Types**:
+  - Unit tests for utilities and services
+  - Component tests with mock interactions
+  - Integration tests for complex features
+  - Snapshot tests for UI consistency
 
 ## Getting Started
 
@@ -120,10 +124,70 @@ A comprehensive mindfulness and emotional regulation app built with Expo, design
    npx expo start
    ```
 
-6. **Run on your preferred platform**
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app for physical device
+6. **Run tests**
+   ```bash
+   # Run all tests
+   npm test
+
+   # Run tests with coverage
+   npm run test:coverage
+
+   # Run tests in watch mode
+   npm run test:watch
+   ```
+
+## Testing
+
+### **Test Structure**
+Tests are organized alongside their corresponding components in `__tests__` directories:
+
+```
+app/
+├── components/
+│   ├── __tests__/
+│   │   ├── GamifiedStats.test.tsx
+│   │   ├── SimpleGamifiedStats.test.tsx
+│   │   ├── CustomButton.test.tsx
+│   │   └── ... (other component tests)
+│   └── ... (component files)
+├── services/
+│   ├── __tests__/
+│   │   └── emailService.test.ts
+│   └── ... (service files)
+└── ... (other app files)
+```
+
+### **Mock System**
+The testing environment includes comprehensive mocks for:
+- React Native components and APIs
+- Firebase services
+- Expo modules
+- Third-party libraries
+- Custom components and services
+
+### **Running Tests**
+```bash
+# Run all tests
+npm test
+
+# Run tests for a specific file
+npm test GamifiedStats
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### **Test Coverage**
+Coverage reports are generated for:
+- Statements
+- Branches
+- Functions
+- Lines
+
+Coverage reports can be found in the `coverage` directory after running tests with coverage.
 
 ## Server Setup
 
