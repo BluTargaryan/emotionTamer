@@ -45,6 +45,13 @@
       "eas": {
         "projectId": "3af74057-02eb-4e8f-a638-d42d79d6e1b9"
       }
+    },
+    "owner": "peaceakoja",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3af74057-02eb-4e8f-a638-d42d79d6e1b9"
     }
   }
 }
